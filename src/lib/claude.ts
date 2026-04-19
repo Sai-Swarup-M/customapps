@@ -1,10 +1,12 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { config } from './config'
 
-export const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!,
-})
+export function getAnthropic(): Anthropic {
+  return new Anthropic({ apiKey: config.anthropicApiKey })
+}
 
-export const EXTRACT_SYSTEM_PROMPT = `You are a grocery ad data extractor. Extract ALL products and prices from the ad image.
+export const EXTRACT_SYSTEM_PROMPT = (today: string) => `You are a grocery ad data extractor. Extract ALL products and prices from the ad image.
+Today's date is ${today}. Use this to infer the correct year for sale dates when the year is not shown in the ad.
 
 Return ONLY valid JSON in this exact structure — no markdown, no explanation:
 {

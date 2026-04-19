@@ -1,4 +1,4 @@
-import { anthropic, EXTRACT_SYSTEM_PROMPT } from './claude'
+import { getAnthropic, EXTRACT_SYSTEM_PROMPT } from './claude'
 import { supabaseAdmin } from './supabase'
 import { normalizePrice } from './normalize'
 
@@ -30,12 +30,13 @@ export async function processAdImage(imageBuffer: Buffer, mimeType: string): Pro
   saleDates: { start: string | null; end: string | null }
 }> {
   const base64Image = imageBuffer.toString('base64')
+  const today = new Date().toISOString().split('T')[0]
 
   // Step 1: Extract data from image using Claude Vision
-  const response = await anthropic.messages.create({
+  const response = await getAnthropic().messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 4096,
-    system: EXTRACT_SYSTEM_PROMPT,
+    system: EXTRACT_SYSTEM_PROMPT(today),
     messages: [
       {
         role: 'user',
@@ -51,7 +52,11 @@ export async function processAdImage(imageBuffer: Buffer, mimeType: string): Pro
   })
 
   const rawText = response.content[0].type === 'text' ? response.content[0].text : ''
-  const extraction: ExtractionResult = JSON.parse(rawText)
+  // Strip markdown code fences if Claude wraps the JSON
+  const cleaned = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim()
+  const extraction: ExtractionResult = JSON.parse(cleaned)
+
+  if (!extraction.store_name) throw new Error('Could not identify a store name from this image. Make sure it is a grocery ad.')
 
   // Step 2: Upsert store
   const { data: store } = await supabaseAdmin
@@ -87,6 +92,7 @@ export async function processAdImage(imageBuffer: Buffer, mimeType: string): Pro
       .single()
 
     if (!productRow) continue
+    if (!product.price) continue  // skip products where Claude couldn't extract a price
 
     const normalized = normalizePrice(
       product.price,

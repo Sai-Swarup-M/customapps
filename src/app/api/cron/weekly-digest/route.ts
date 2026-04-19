@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
+import { config } from '@/lib/config'
 import webpush from 'web-push'
 
 export async function GET(req: NextRequest) {
-  // Vercel cron calls with a secret header
-  if (req.headers.get('authorization') !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (req.headers.get('authorization') !== `Bearer ${config.cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -40,8 +40,8 @@ export async function GET(req: NextRequest) {
 
   webpush.setVapidDetails(
     'mailto:admin@grocery-deals.app',
-    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-    process.env.VAPID_PRIVATE_KEY!
+    config.vapidPublicKey,
+    config.vapidPrivateKey
   )
 
   let sent = 0

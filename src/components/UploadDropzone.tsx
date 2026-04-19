@@ -25,12 +25,14 @@ export default function UploadDropzone() {
     try {
       const res = await fetch('/api/upload', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_UPLOAD_API_KEY}` },
+        headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_UPLOAD_API_KEY ?? ''}` },
         body: formData,
       })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? 'Upload failed')
-      setResult(data)
+      const text = await res.text()
+      let data: Record<string, unknown> = {}
+      try { data = JSON.parse(text) } catch { /* non-JSON response */ }
+      if (!res.ok) throw new Error((data.detail as string) ?? (data.error as string) ?? `Server error ${res.status}: ${text.slice(0, 200)}`)
+      setResult(data as unknown as UploadResult)
       setStatus('success')
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Upload failed')

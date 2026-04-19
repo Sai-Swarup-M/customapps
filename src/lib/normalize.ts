@@ -6,7 +6,8 @@ export type NormalizedUnit = {
 }
 
 // Parse unit strings like "4LB", "20LB", "LB", "KG", "1KG", "EACH", "BUNCH", "9CT"
-function parseUnit(unit: string): { baseUnit: string; quantity: number } {
+function parseUnit(unit: string | null): { baseUnit: string; quantity: number } {
+  if (!unit) return { baseUnit: 'OTHER', quantity: 1 }
   const cleaned = unit.trim().toUpperCase().replace(/^\//, '')
 
   const weightMatch = cleaned.match(/^(\d+(?:\.\d+)?)\s*(LB|KG)$/)
@@ -25,7 +26,8 @@ function parseUnit(unit: string): { baseUnit: string; quantity: number } {
     const qty = parseFloat(numUnitMatch[1])
     const base = numUnitMatch[2]
     if (base === 'LB') return { baseUnit: 'LB', quantity: qty }
-    if (base === 'KG' || base === 'GM') return { baseUnit: 'KG', quantity: base === 'GM' ? qty / 1000 : qty }
+    if (base === 'KG') return { baseUnit: 'KG', quantity: qty }
+    if (base === 'GM' || base === 'G') return { baseUnit: 'KG', quantity: qty / 1000 }
     return { baseUnit: base, quantity: qty }
   }
 
@@ -34,7 +36,7 @@ function parseUnit(unit: string): { baseUnit: string; quantity: number } {
 
 export function normalizePrice(
   price: number,
-  unit: string,
+  unit: string | null,
   dealType: string,
   multiBuyQty: number | null,
   multiBuyPrice: number | null

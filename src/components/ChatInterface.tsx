@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 type Message = { role: 'user' | 'assistant'; content: string }
 
@@ -66,19 +68,70 @@ export default function ChatInterface() {
         {messages.map((m, i) => (
           <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div
-              className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm whitespace-pre-wrap ${
+              className={`max-w-[90%] rounded-2xl px-4 py-3 text-sm ${
                 m.role === 'user'
                   ? 'bg-green-600 text-white rounded-br-sm'
-                  : 'bg-gray-100 text-gray-900 rounded-bl-sm'
+                  : 'bg-white border border-gray-100 shadow-sm text-gray-900 rounded-bl-sm'
               }`}
             >
-              {m.content}
+              {m.role === 'user' ? (
+                <p>{m.content}</p>
+              ) : (
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    h3: ({ children }) => (
+                      <h3 className="font-bold text-base text-gray-900 mt-3 mb-2 first:mt-0">{children}</h3>
+                    ),
+                    h4: ({ children }) => (
+                      <h4 className="font-semibold text-sm text-gray-800 mt-2 mb-1">{children}</h4>
+                    ),
+                    p: ({ children }) => (
+                      <p className="text-sm text-gray-700 mb-2 last:mb-0 leading-relaxed">{children}</p>
+                    ),
+                    strong: ({ children }) => (
+                      <strong className="font-semibold text-gray-900">{children}</strong>
+                    ),
+                    ul: ({ children }) => (
+                      <ul className="list-none space-y-1 mb-2">{children}</ul>
+                    ),
+                    li: ({ children }) => (
+                      <li className="text-sm text-gray-700 flex gap-2">
+                        <span className="text-green-500 mt-0.5">•</span>
+                        <span>{children}</span>
+                      </li>
+                    ),
+                    table: ({ children }) => (
+                      <div className="overflow-x-auto my-2 rounded-lg border border-gray-100">
+                        <table className="w-full text-xs">{children}</table>
+                      </div>
+                    ),
+                    thead: ({ children }) => (
+                      <thead className="bg-green-50">{children}</thead>
+                    ),
+                    th: ({ children }) => (
+                      <th className="px-3 py-2 text-left font-semibold text-green-800 whitespace-nowrap">{children}</th>
+                    ),
+                    td: ({ children }) => (
+                      <td className="px-3 py-2 text-gray-700 border-t border-gray-50">{children}</td>
+                    ),
+                    hr: () => <hr className="border-gray-100 my-3" />,
+                    blockquote: ({ children }) => (
+                      <blockquote className="border-l-2 border-green-300 pl-3 text-gray-500 italic text-xs my-2">
+                        {children}
+                      </blockquote>
+                    ),
+                  }}
+                >
+                  {m.content}
+                </ReactMarkdown>
+              )}
             </div>
           </div>
         ))}
         {loading && (
           <div className="flex justify-start">
-            <div className="bg-gray-100 rounded-2xl rounded-bl-sm px-4 py-2">
+            <div className="bg-white border border-gray-100 shadow-sm rounded-2xl rounded-bl-sm px-4 py-3">
               <span className="inline-flex gap-1">
                 <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:0ms]" />
                 <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:150ms]" />

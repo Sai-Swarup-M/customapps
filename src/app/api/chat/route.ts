@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
-import { anthropic, CHAT_SYSTEM_PROMPT } from '@/lib/claude'
+import { getAnthropic, CHAT_SYSTEM_PROMPT } from '@/lib/claude'
 import type { DealRow } from '@/lib/types'
 
 export async function POST(req: NextRequest) {
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     .order('effective_unit_price', { ascending: true })
     .returns<DealRow[]>()
 
-  const response = await anthropic.messages.create({
+  const response = await getAnthropic().messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 1024,
     system: CHAT_SYSTEM_PROMPT(JSON.stringify(deals, null, 2), today),

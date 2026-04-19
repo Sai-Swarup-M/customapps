@@ -1,30 +1,24 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import { config } from './config'
 
 let _supabase: SupabaseClient | null = null
 let _supabaseAdmin: SupabaseClient | null = null
 
-export function getSupabase(): SupabaseClient {
+function getSupabase(): SupabaseClient {
   if (!_supabase) {
-    _supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
+    _supabase = createClient(config.supabaseUrl, config.supabaseAnonKey)
   }
   return _supabase
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function getSupabaseAdmin(): SupabaseClient<any> {
+function getSupabaseAdmin(): SupabaseClient<any> {
   if (!_supabaseAdmin) {
-    _supabaseAdmin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+    _supabaseAdmin = createClient(config.supabaseUrl, config.supabaseServiceKey)
   }
   return _supabaseAdmin
 }
 
-// Convenience aliases used across the codebase
 export const supabase = new Proxy({} as SupabaseClient, {
   get: (_, prop) => getSupabase()[prop as keyof SupabaseClient],
 })
