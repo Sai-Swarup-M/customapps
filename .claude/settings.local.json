@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-next-app@latest grocery-deals --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-turbopack)",
+      "Bash(NEXT_PUBLIC_SUPABASE_URL=https://placeholder.supabase.co NEXT_PUBLIC_SUPABASE_ANON_KEY=placeholder SUPABASE_SERVICE_ROLE_KEY=placeholder ANTHROPIC_API_KEY=placeholder UPLOAD_API_KEY=placeholder CRON_SECRET=placeholder NEXT_PUBLIC_VAPID_PUBLIC_KEY=placeholder VAPID_PRIVATE_KEY=placeholder npm run build)",
+      "Bash(brew install *)",
+      "Bash(gh auth *)",
+      "Bash(gh api *)",
+      "Bash(gh repo *)",
+      "Bash(git remote *)",
+      "Bash(git push *)",
+      "Bash(openssl rand *)",
+      "Bash(npx web-push *)",
+      "Bash(curl -s http://localhost:3000)",
+      "Bash(curl -s -X POST http://localhost:3000/api/upload -H 'Authorization: Bearer fe23292b1831a8c3eb99401b5dad7a53e90534172dbbde2fe3d654d33d077c6e' -F 'image=@/dev/null;type=image/jpeg')",
+      "Bash(curl -v -X POST http://localhost:3000/api/upload -H 'Authorization: Bearer fe23292b1831a8c3eb99401b5dad7a53e90534172dbbde2fe3d654d33d077c6e' -F 'image=@/dev/null;type=image/jpeg')",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(npm run *)",
+      "Bash(curl -s -o /dev/null -w \"Home page: %{http_code}\\\\n\" http://localhost:3000/)",
+      "Bash(curl -s -o /dev/null -w \"Upload \\(no auth\\): %{http_code}\\\\n\" -X POST http://localhost:3000/api/upload)",
+      "Bash(curl -s -o /dev/null -w \"Upload \\(wrong key\\): %{http_code}\\\\n\" -X POST http://localhost:3000/api/upload -H \"Authorization: Bearer wrong\")",
+      "Bash(curl -s -w \"\\\\nDeals current: %{http_code}\\\\n\" http://localhost:3000/api/deals/current)",
+      "Bash(curl -s -w \"\\\\nDeals top: %{http_code}\\\\n\" http://localhost:3000/api/deals/top)",
+      "Bash(curl -s -w \"\\\\nDeals compare: %{http_code}\\\\n\" \"http://localhost:3000/api/deals/compare?product=rice\")",
+      "Bash(curl -s http://localhost:3000/api/deals/current)",
+      "Bash(curl -s http://localhost:3000/api/deals/top)",
+      "Bash(curl -s -X POST http://localhost:3000/api/chat -H 'Content-Type: application/json' -d '{\"message\": \"Are there any deals this week?\"}')",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl -s -X POST http://localhost:3000/api/chat -H 'Content-Type: application/json' -d '{\"message\":\"any deals this week?\"}')",
+      "Bash(curl -s -X POST http://localhost:3000/api/upload -H 'Authorization: Bearer fe23292b1831a8c3eb99401b5dad7a53e90534172dbbde2fe3d654d33d077c6e' -F 'image=@/System/Library/Desktop Pictures/Sonoma.heic;type=image/heic')",
+      "Bash(curl -s -X POST http://localhost:3000/api/upload -H 'Authorization: Bearer fe23292b1831a8c3eb99401b5dad7a53e90534172dbbde2fe3d654d33d077c6e' -F 'image=@/System/Library/Image Capture/Automatic Tasks/MakePDF.app/Contents/Resources/horiz.jpg;type=image/jpeg')",
+      "Bash(curl -s -X POST http://localhost:3000/api/upload -H 'Authorization: Bearer fe23292b1831a8c3eb99401b5dad7a53e90534172dbbde2fe3d654d33d077c6e' -F 'image=@/Users/swarup/Downloads/bigbazar_ad1.jpeg;type=image/jpeg')",
+      "Bash(curl -s http://localhost:3000/api/deals/top?limit=5)",
+      "Bash(curl -s \"http://localhost:3000/api/deals/top?limit=5\")",
+      "Bash(python3 -c ' *)",
+      "Bash(curl -s -X POST http://localhost:3000/api/chat -H 'Content-Type: application/json' -d '{\"message\":\"What are the top 3 best deals this week?\"}')",
+      "Bash(python3 -c \"import json,sys; print\\(json.load\\(sys.stdin\\)['answer']\\)\")",
+      "Bash(git mv *)",
+      "Bash(cp -r /Users/swarup/customapps/docs /Users/swarup/customapps/grocery-deals/docs)",
+      "Bash(cp -r /Users/swarup/customapps/.claude /Users/swarup/customapps/grocery-deals/.claude)"
+    ]
+  }
+}
