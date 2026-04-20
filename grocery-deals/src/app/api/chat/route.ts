@@ -27,7 +27,8 @@ async function extractIntent(
     system: INTENT_PROMPT(today, stores),
     messages,
   })
-  const text = response.content[0].type === 'text' ? response.content[0].text.trim() : ''
+  const raw = response.content[0].type === 'text' ? response.content[0].text.trim() : ''
+  const text = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim()
   try {
     return JSON.parse(text) as ChatIntent
   } catch {
@@ -110,7 +111,6 @@ export async function POST(req: NextRequest) {
   // We still extract intent to check is_followup, but only need stores/products for non-followups
   const stores = await fetchStores()
   const intent = await extractIntent(message, history, today, stores)
-  console.log('INTENT:', JSON.stringify(intent))
 
   let dealsJson: string
   let deals: DealRow[] = []
