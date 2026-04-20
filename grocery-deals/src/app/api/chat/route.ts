@@ -44,6 +44,27 @@ async function extractIntent(
 }
 
 async function fetchDeals(intent: ChatIntent, today: string): Promise<DealRow[]> {
+  // Resolve product IDs upfront — PostgREST can't filter parent rows via embedded resource columns
+  let productIds: string[] | null = null
+  if (intent.product || intent.brand) {
+    let pq = supabaseAdmin.from('products').select('id')
+    if (intent.product) pq = pq.ilike('name', `%${intent.product}%`)
+    if (intent.brand)   pq = pq.ilike('brand', `%${intent.brand}%`)
+    const { data: prods } = await pq.returns<{ id: string }[]>()
+    productIds = prods?.map((p) => p.id) ?? []
+    if (productIds.length === 0) return []
+  }
+
+  // Resolve store IDs upfront for same reason
+  let storeIds: string[] | null = null
+  if (intent.store) {
+    const { data: strs } = await supabaseAdmin
+      .from('stores').select('id').ilike('name', `%${intent.store}%`)
+      .returns<{ id: string }[]>()
+    storeIds = strs?.map((s) => s.id) ?? []
+    if (storeIds.length === 0) return []
+  }
+
   let query = supabaseAdmin
     .from('deals')
     .select(`
@@ -59,34 +80,18 @@ async function fetchDeals(intent: ChatIntent, today: string): Promise<DealRow[]>
   } else if (intent.date_type === 'specific_range' && intent.date_start && intent.date_end) {
     query = query.lte('sale_start_date', intent.date_end).gte('sale_end_date', intent.date_start)
   } else if (intent.date_type === 'all_history') {
-    // Cap at 54 weeks (full year of seasonal history)
     const cutoff = new Date(today)
     cutoff.setDate(cutoff.getDate() - 54 * 7)
     query = query.gte('sale_start_date', cutoff.toISOString().split('T')[0])
   }
 
-  // Product filter
-  if (intent.product) {
-    query = query.ilike('products.name', `%${intent.product}%`)
-  }
-
-  // Brand filter
-  if (intent.brand) {
-    query = query.ilike('products.brand', `%${intent.brand}%`)
-  }
-
-  // Store filter
-  if (intent.store) {
-    query = query.ilike('stores.name', `%${intent.store}%`)
-  }
-
-  // For all_history with no product filter, limit columns to keep context small
-  const limit = intent.date_type === 'all_history' && !intent.product ? 500 : 1000
+  if (productIds) query = query.in('product_id', productIds)
+  if (storeIds)   query = query.in('store_id', storeIds)
 
   const { data } = await query
     .order('sale_start_date', { ascending: false })
     .order('effective_unit_price', { ascending: true })
-    .limit(limit)
+    .limit(500)
     .returns<DealRow[]>()
 
   return data ?? []
