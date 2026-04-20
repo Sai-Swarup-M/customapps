@@ -38,23 +38,50 @@ Rules:
 - Infer year from context if not shown in dates
 - Use null for any truly unknown field`
 
-export const DATE_RANGE_PROMPT = (today: string) => `Today is ${today} (YYYY-MM-DD).
-Extract the date range the user is asking about. Return ONLY valid JSON, no explanation:
-{"start":"YYYY-MM-DD","end":"YYYY-MM-DD"}
+export type ChatIntent = {
+  is_followup: boolean
+  product: string | null
+  brand: string | null
+  store: string | null
+  date_type: 'current_week' | 'specific_range' | 'all_history'
+  date_start: string | null
+  date_end: string | null
+}
+
+export const INTENT_PROMPT = (today: string, products: string[], stores: string[]) =>
+  `Today is ${today} (YYYY-MM-DD).
+
+Known products (name | brand): ${products.join(', ')}
+Known stores: ${stores.join(', ')}
+
+Extract the user's intent from their message. Return ONLY valid JSON, no explanation:
+{
+  "is_followup": false,
+  "product": "exact product name from the list above, or null",
+  "brand": "exact brand from the list above, or null",
+  "store": "exact store name from the list above, or null",
+  "date_type": "current_week",
+  "date_start": null,
+  "date_end": null
+}
 
 Rules:
-- No time reference, "this week", or "current week" → Monday to Sunday of the week containing today
-- "last week" → Monday to Sunday of the previous week
-- "last 2 weeks" → 14 days ago to today
-- "last 3 weeks" → 21 days ago to today
-- "April first week" / "1st week of April" → April 1–7 of the nearest relevant year
-- "April second week" / "2nd week of April" → April 8–14
-- "April third week" → April 15–21
-- "April fourth week" / "last week of April" → April 22–30
-- Apply same pattern for any month
-- "last month" → first to last day of the previous calendar month`
+- is_followup: true if the message references a previous answer ("those", "that one", "the cheaper one", "which of them", "compare those") — false otherwise
+- product/brand: match to the closest item in the known list, tolerating typos and partial names. null if not asking about a specific product
+- store: match to known stores if mentioned, null otherwise
+- date_type:
+  - "current_week" if no time reference or "this week" → date_start/end = null
+  - "specific_range" if a past/future period is mentioned → fill date_start and date_end
+  - "all_history" if "all time", "ever", "history", "always" → date_start/end = null
+- specific_range date rules:
+  - "last week" → previous Monday to Sunday
+  - "last N weeks" → N×7 days ago to today
+  - "last month" → first to last day of previous month
+  - "April first week" / "1st week of April" → April 1–7 of nearest relevant year
+  - "April second week" → April 8–14, third → 15–21, fourth → 22–30`
 
-export const CHAT_SYSTEM_PROMPT = (dealsJson: string, today: string) => `You are a helpful grocery deals assistant. Answer using ONLY the deals data below.
+export const CHAT_SYSTEM_PROMPT = (dealsJson: string, today: string) =>
+  `You are a helpful grocery deals assistant. Answer using ONLY the deals data below.
 Be specific: include store name, price, unit, and effective per-unit price.
 When comparing stores, clearly state which is better and by how much (percentage).
 If no relevant deals exist in the data provided, say so honestly — do not guess.
