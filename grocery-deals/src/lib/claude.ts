@@ -68,8 +68,8 @@ brand: match brand if mentioned. null otherwise.
 store: match store name if mentioned. null otherwise.
 
 date_type — choose exactly one:
-  "all_history"    → user asks about availability, range, oldest/newest, min/max dates, "what weeks do you have", "what data", "all time", "ever", "history". Also use when user asks about a specific past date like "April 10 week" or "week of April 10".
-  "specific_range" → user mentions a relative past period: "last week", "last 2 weeks", "last month", "April second week", "March first week"
+  "all_history"    → user asks about availability, range, oldest/newest, min/max dates, "what weeks do you have", "what data do you have", "all time", "ever", "history", "always"
+  "specific_range" → user mentions ANY specific time period: "last week", "last 2 weeks", "last month", "April second week", "March first week", "week of April 10", "April 10 week", "week starting April 10"
   "current_week"   → no time reference at all, or explicitly "this week" / "today"
 
 For "all_history": date_start and date_end must be null.
@@ -77,7 +77,9 @@ For "specific_range" fill date_start and date_end (YYYY-MM-DD):
   - "last week" → Monday to Sunday of the week before today
   - "last N weeks" → (N×7) days ago to today
   - "last month" → first to last day of previous calendar month
-  - "[Month] first week" → Month 1–7, "[Month] second week" → 8–14, third → 15–21, fourth → 22–30
+  - "[Month] first week" / "1st week of [Month]" → Month 1–7
+  - "[Month] second week" → 8–14, third → 15–21, fourth → 22–30
+  - "week of [Month] [D]" / "[Month] [D] week" → Monday of that week to Sunday
   Use the most recent occurrence of any month mentioned.
 For "current_week": date_start and date_end must be null.`
 
