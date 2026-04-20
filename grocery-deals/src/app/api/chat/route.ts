@@ -6,15 +6,21 @@ import type { DealRow } from '@/lib/types'
 
 type HistoryMessage = { role: 'user' | 'assistant'; content: string }
 
-async function fetchStores(): Promise<string[]> {
-  const { data } = await supabaseAdmin.from('stores').select('name')
-  return (data ?? []).map((s: { name: string }) => s.name)
+async function fetchProductNamesAndStores(): Promise<{ productNames: string[]; stores: string[] }> {
+  const [{ data: prods }, { data: strs }] = await Promise.all([
+    supabaseAdmin.from('products').select('name'),
+    supabaseAdmin.from('stores').select('name'),
+  ])
+  const productNames = [...new Set((prods ?? []).map((p: { name: string }) => p.name))]
+  const stores = (strs ?? []).map((s: { name: string }) => s.name)
+  return { productNames, stores }
 }
 
 async function extractIntent(
   message: string,
   history: HistoryMessage[],
   today: string,
+  productNames: string[],
   stores: string[]
 ): Promise<ChatIntent> {
   const messages: HistoryMessage[] = [
@@ -24,7 +30,7 @@ async function extractIntent(
   const response = await getAnthropic().messages.create({
     model: 'claude-haiku-4-5-20251001',
     max_tokens: 150,
-    system: INTENT_PROMPT(today, stores),
+    system: INTENT_PROMPT(today, productNames, stores),
     messages,
   })
   const raw = response.content[0].type === 'text' ? response.content[0].text.trim() : ''
@@ -37,25 +43,14 @@ async function extractIntent(
 }
 
 async function fetchDeals(intent: ChatIntent, today: string): Promise<DealRow[]> {
-  // Resolve product IDs — multi-word fuzzy search across name + brand
+  // Haiku returns the exact product name from the DB — query all matching brands
   let productIds: string[] | null = null
   if (intent.product || intent.brand) {
-    const { data: allProds } = await supabaseAdmin
-      .from('products').select('id, name, brand')
-      .returns<{ id: string; name: string; brand: string | null }[]>()
-
-    const words = [
-      ...(intent.product ?? '').toLowerCase().split(/\s+/).filter(Boolean),
-      ...(intent.brand ?? '').toLowerCase().split(/\s+/).filter(Boolean),
-    ]
-
-    productIds = (allProds ?? [])
-      .filter((p) => {
-        const haystack = `${p.name} ${p.brand ?? ''}`.toLowerCase()
-        return words.every((w) => haystack.includes(w))
-      })
-      .map((p) => p.id)
-
+    let pq = supabaseAdmin.from('products').select('id')
+    if (intent.product) pq = pq.ilike('name', intent.product)
+    if (intent.brand)   pq = pq.ilike('brand', `%${intent.brand}%`)
+    const { data: prods } = await pq.returns<{ id: string }[]>()
+    productIds = prods?.map((p) => p.id) ?? []
     if (productIds.length === 0) return []
   }
 
@@ -109,8 +104,8 @@ export async function POST(req: NextRequest) {
 
   // Follow-up: skip DB query, continue conversation from history
   // We still extract intent to check is_followup, but only need stores/products for non-followups
-  const stores = await fetchStores()
-  const intent = await extractIntent(message, history, today, stores)
+  const { productNames, stores } = await fetchProductNamesAndStores()
+  const intent = await extractIntent(message, history, today, productNames, stores)
 
   let dealsJson: string
   let deals: DealRow[] = []

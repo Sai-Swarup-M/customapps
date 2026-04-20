@@ -48,9 +48,10 @@ export type ChatIntent = {
   date_end: string | null
 }
 
-export const INTENT_PROMPT = (today: string, stores: string[]) =>
+export const INTENT_PROMPT = (today: string, productNames: string[], stores: string[]) =>
   `You are a query intent extractor for a grocery deals database. Today is ${today} (YYYY-MM-DD).
 
+Known products: ${productNames.join(', ')}
 Known stores: ${stores.join(', ')}
 
 Return ONLY this JSON, no markdown, no explanation:
@@ -60,11 +61,13 @@ RULES:
 
 is_followup: true ONLY if message uses pronouns referencing the previous answer ("those", "that one", "the cheaper one", "which of them", "compare those"). Otherwise false.
 
-product: the product the user is asking about as plain text (e.g. "basmati rice", "green beans", "atta"). null if not asking about a specific product. Do NOT try to normalize — return exactly what the user said.
+product: match the user's product mention to the closest item in the Known products list above.
+  Tolerate typos, partial names, and colloquial names (e.g. "atta" → "Whole Wheat Flour (Atta)", "basmatii rce" → "Basmati Rice", "dal" → "Toor Dal").
+  Return the EXACT name from the list. null if no product is mentioned or no confident match exists.
 
 brand: brand name if explicitly mentioned (e.g. "India Gate", "Laxmi"). null otherwise.
 
-store: match to one of the known stores above if mentioned. null otherwise.
+store: match to one of the Known stores above if mentioned. null otherwise.
 
 date_type — choose exactly one:
   "all_history"    → user asks about availability, range, oldest/newest, min/max dates, "what weeks do you have", "what data do you have", "all time", "ever", "history", "always", "is it a good price", "best price ever"
