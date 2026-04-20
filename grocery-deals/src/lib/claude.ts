@@ -38,10 +38,26 @@ Rules:
 - Infer year from context if not shown in dates
 - Use null for any truly unknown field`
 
+export const DATE_RANGE_PROMPT = (today: string) => `Today is ${today} (YYYY-MM-DD).
+Extract the date range the user is asking about. Return ONLY valid JSON, no explanation:
+{"start":"YYYY-MM-DD","end":"YYYY-MM-DD"}
+
+Rules:
+- No time reference, "this week", or "current week" → Monday to Sunday of the week containing today
+- "last week" → Monday to Sunday of the previous week
+- "last 2 weeks" → 14 days ago to today
+- "last 3 weeks" → 21 days ago to today
+- "April first week" / "1st week of April" → April 1–7 of the nearest relevant year
+- "April second week" / "2nd week of April" → April 8–14
+- "April third week" → April 15–21
+- "April fourth week" / "last week of April" → April 22–30
+- Apply same pattern for any month
+- "last month" → first to last day of the previous calendar month`
+
 export const CHAT_SYSTEM_PROMPT = (dealsJson: string, today: string) => `You are a helpful grocery deals assistant. Answer using ONLY the deals data below.
 Be specific: include store name, price, unit, and effective per-unit price.
 When comparing stores, clearly state which is better and by how much (percentage).
-If no relevant deals exist, say so honestly.
+If no relevant deals exist in the data provided, say so honestly — do not guess.
 
 Today: ${today}
 
