@@ -58,8 +58,12 @@ async function fetchDeals(intent: ChatIntent, today: string): Promise<DealRow[]>
     query = query.gte('sale_end_date', today)
   } else if (intent.date_type === 'specific_range' && intent.date_start && intent.date_end) {
     query = query.lte('sale_start_date', intent.date_end).gte('sale_end_date', intent.date_start)
+  } else if (intent.date_type === 'all_history') {
+    // Cap at 54 weeks (full year of seasonal history)
+    const cutoff = new Date(today)
+    cutoff.setDate(cutoff.getDate() - 54 * 7)
+    query = query.gte('sale_start_date', cutoff.toISOString().split('T')[0])
   }
-  // all_history: no date filter
 
   // Product filter
   if (intent.product) {
