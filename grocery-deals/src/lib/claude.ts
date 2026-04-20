@@ -48,39 +48,36 @@ export type ChatIntent = {
   date_end: string | null
 }
 
-export const INTENT_PROMPT = (today: string, products: string[], stores: string[]) =>
+export const INTENT_PROMPT = (today: string, stores: string[]) =>
   `You are a query intent extractor for a grocery deals database. Today is ${today} (YYYY-MM-DD).
 
-Known products (name | brand): ${products.join(', ')}
 Known stores: ${stores.join(', ')}
 
 Return ONLY this JSON, no markdown, no explanation:
 {"is_followup":false,"product":null,"brand":null,"store":null,"date_type":"current_week","date_start":null,"date_end":null}
 
-RULES — read carefully:
+RULES:
 
 is_followup: true ONLY if message uses pronouns referencing the previous answer ("those", "that one", "the cheaper one", "which of them", "compare those"). Otherwise false.
 
-product: match the user's product mention to the closest item in the known list above (tolerate typos, partial names). null if no product mentioned.
+product: the product the user is asking about as plain text (e.g. "basmati rice", "green beans", "atta"). null if not asking about a specific product. Do NOT try to normalize — return exactly what the user said.
 
-brand: match brand if mentioned. null otherwise.
+brand: brand name if explicitly mentioned (e.g. "India Gate", "Laxmi"). null otherwise.
 
-store: match store name if mentioned. null otherwise.
+store: match to one of the known stores above if mentioned. null otherwise.
 
 date_type — choose exactly one:
-  "all_history"    → user asks about availability, range, oldest/newest, min/max dates, "what weeks do you have", "what data do you have", "all time", "ever", "history", "always"
-  "specific_range" → user mentions ANY specific time period: "last week", "last 2 weeks", "last month", "April second week", "March first week", "week of April 10", "April 10 week", "week starting April 10"
-  "current_week"   → no time reference at all, or explicitly "this week" / "today"
+  "all_history"    → user asks about availability, range, oldest/newest, min/max dates, "what weeks do you have", "what data do you have", "all time", "ever", "history", "always", "is it a good price", "best price ever"
+  "specific_range" → user mentions ANY specific time period: "last week", "last 2 weeks", "last month", "April second week", "week of April 10", "April 10 week"
+  "current_week"   → no time reference, or "this week", "today", "now", "current"
 
 For "all_history": date_start and date_end must be null.
 For "specific_range" fill date_start and date_end (YYYY-MM-DD):
   - "last week" → Monday to Sunday of the week before today
   - "last N weeks" → (N×7) days ago to today
   - "last month" → first to last day of previous calendar month
-  - "[Month] first week" / "1st week of [Month]" → Month 1–7
-  - "[Month] second week" → 8–14, third → 15–21, fourth → 22–30
+  - "[Month] first week" → Month 1–7, second → 8–14, third → 15–21, fourth → 22–30
   - "week of [Month] [D]" / "[Month] [D] week" → Monday of that week to Sunday
-  Use the most recent occurrence of any month mentioned.
 For "current_week": date_start and date_end must be null.`
 
 export const CHAT_SYSTEM_PROMPT = (dealsJson: string, today: string) =>
