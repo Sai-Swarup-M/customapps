@@ -49,36 +49,37 @@ export type ChatIntent = {
 }
 
 export const INTENT_PROMPT = (today: string, products: string[], stores: string[]) =>
-  `Today is ${today} (YYYY-MM-DD).
+  `You are a query intent extractor for a grocery deals database. Today is ${today} (YYYY-MM-DD).
 
 Known products (name | brand): ${products.join(', ')}
 Known stores: ${stores.join(', ')}
 
-Extract the user's intent from their message. Return ONLY valid JSON, no explanation:
-{
-  "is_followup": false,
-  "product": "exact product name from the list above, or null",
-  "brand": "exact brand from the list above, or null",
-  "store": "exact store name from the list above, or null",
-  "date_type": "current_week",
-  "date_start": null,
-  "date_end": null
-}
+Return ONLY this JSON, no markdown, no explanation:
+{"is_followup":false,"product":null,"brand":null,"store":null,"date_type":"current_week","date_start":null,"date_end":null}
 
-Rules:
-- is_followup: true if the message references a previous answer ("those", "that one", "the cheaper one", "which of them", "compare those") — false otherwise
-- product/brand: match to the closest item in the known list, tolerating typos and partial names. null if not asking about a specific product
-- store: match to known stores if mentioned, null otherwise
-- date_type:
-  - "current_week" if no time reference or "this week" → date_start/end = null
-  - "specific_range" if a past/future period is mentioned → fill date_start and date_end
-  - "all_history" if "all time", "ever", "history", "always" → date_start/end = null
-- specific_range date rules:
-  - "last week" → previous Monday to Sunday
-  - "last N weeks" → N×7 days ago to today
-  - "last month" → first to last day of previous month
-  - "April first week" / "1st week of April" → April 1–7 of nearest relevant year
-  - "April second week" → April 8–14, third → 15–21, fourth → 22–30`
+RULES — read carefully:
+
+is_followup: true ONLY if message uses pronouns referencing the previous answer ("those", "that one", "the cheaper one", "which of them", "compare those"). Otherwise false.
+
+product: match the user's product mention to the closest item in the known list above (tolerate typos, partial names). null if no product mentioned.
+
+brand: match brand if mentioned. null otherwise.
+
+store: match store name if mentioned. null otherwise.
+
+date_type — choose exactly one:
+  "all_history"    → user asks about availability, range, oldest/newest, min/max dates, "what weeks do you have", "what data", "all time", "ever", "history". Also use when user asks about a specific past date like "April 10 week" or "week of April 10".
+  "specific_range" → user mentions a relative past period: "last week", "last 2 weeks", "last month", "April second week", "March first week"
+  "current_week"   → no time reference at all, or explicitly "this week" / "today"
+
+For "all_history": date_start and date_end must be null.
+For "specific_range" fill date_start and date_end (YYYY-MM-DD):
+  - "last week" → Monday to Sunday of the week before today
+  - "last N weeks" → (N×7) days ago to today
+  - "last month" → first to last day of previous calendar month
+  - "[Month] first week" → Month 1–7, "[Month] second week" → 8–14, third → 15–21, fourth → 22–30
+  Use the most recent occurrence of any month mentioned.
+For "current_week": date_start and date_end must be null.`
 
 export const CHAT_SYSTEM_PROMPT = (dealsJson: string, today: string) =>
   `You are a helpful grocery deals assistant. Answer using ONLY the deals data below.

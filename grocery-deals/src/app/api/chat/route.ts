@@ -76,8 +76,13 @@ async function fetchDeals(intent: ChatIntent, today: string): Promise<DealRow[]>
     query = query.ilike('stores.name', `%${intent.store}%`)
   }
 
+  // For all_history with no product filter, limit columns to keep context small
+  const limit = intent.date_type === 'all_history' && !intent.product ? 500 : 1000
+
   const { data } = await query
+    .order('sale_start_date', { ascending: false })
     .order('effective_unit_price', { ascending: true })
+    .limit(limit)
     .returns<DealRow[]>()
 
   return data ?? []
