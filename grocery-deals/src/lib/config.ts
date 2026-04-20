@@ -22,6 +22,10 @@ for (const [k, v] of Object.entries(fileEnv)) {
   if (v) env[k] = v
 }
 
+export function getToday(): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Chicago' }).format(new Date())
+}
+
 export const config = {
   anthropicApiKey:      env.ANTHROPIC_API_KEY ?? '',
   supabaseUrl:          env.NEXT_PUBLIC_SUPABASE_URL ?? '',

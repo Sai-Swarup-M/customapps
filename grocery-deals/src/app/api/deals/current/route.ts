@@ -1,9 +1,10 @@
+import { getToday } from '@/lib/config'
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import type { DealRow } from '@/lib/types'
 
 export async function GET() {
-  const today = new Date().toISOString().split('T')[0]
+  const today = getToday()
 
   const { data, error } = await supabaseAdmin
     .from('deals')

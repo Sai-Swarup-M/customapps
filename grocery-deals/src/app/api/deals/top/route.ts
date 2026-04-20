@@ -1,3 +1,4 @@
+import { getToday } from '@/lib/config'
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import type { DealRow } from '@/lib/types'
@@ -7,7 +8,7 @@ export async function GET(req: NextRequest) {
   const limit = Math.min(parseInt(searchParams.get('limit') ?? '10'), 50)
   const category = searchParams.get('category')
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = getToday()
 
   let baseQuery = supabaseAdmin
     .from('deals')

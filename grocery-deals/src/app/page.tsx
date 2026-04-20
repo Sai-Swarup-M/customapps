@@ -1,10 +1,11 @@
+import { getToday } from '@/lib/config'
 import DealCard from '@/components/DealCard'
 import { supabaseAdmin } from '@/lib/supabase'
 
 export const revalidate = 300
 
 async function getTopDeals() {
-  const today = new Date().toISOString().split('T')[0]
+  const today = getToday()
   const { data } = await supabaseAdmin
     .from('deals')
     .select(`

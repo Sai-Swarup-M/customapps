@@ -1,3 +1,4 @@
+import { getToday } from '@/lib/config'
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import type { DealRow } from '@/lib/types'
@@ -9,7 +10,7 @@ export async function GET(req: NextRequest) {
 
   if (!product) return NextResponse.json({ error: 'product param required' }, { status: 400 })
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = getToday()
 
   let productQuery = supabaseAdmin
     .from('products')

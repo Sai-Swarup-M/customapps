@@ -1,3 +1,4 @@
+import { getToday } from '@/lib/config'
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { getAnthropic, CHAT_SYSTEM_PROMPT } from '@/lib/claude'
@@ -7,7 +8,7 @@ export async function POST(req: NextRequest) {
   const { message } = await req.json()
   if (!message?.trim()) return NextResponse.json({ error: 'No message' }, { status: 400 })
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = getToday()
 
   const { data: deals } = await supabaseAdmin
     .from('deals')

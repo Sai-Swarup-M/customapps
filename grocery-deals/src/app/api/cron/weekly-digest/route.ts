@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
-import { config } from '@/lib/config'
+import { config, getToday } from '@/lib/config'
 import webpush from 'web-push'
 
 export async function GET(req: NextRequest) {
@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = getToday()
 
   const { data: topDeals } = await supabaseAdmin
     .from('deals')

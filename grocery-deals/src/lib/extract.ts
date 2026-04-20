@@ -1,3 +1,4 @@
+import { getToday } from '@/lib/config'
 import { getAnthropic, EXTRACT_SYSTEM_PROMPT } from './claude'
 import { supabaseAdmin } from './supabase'
 import { normalizePrice } from './normalize'
@@ -30,7 +31,7 @@ export async function processAdImage(imageBuffer: Buffer, mimeType: string): Pro
   saleDates: { start: string | null; end: string | null }
 }> {
   const base64Image = imageBuffer.toString('base64')
-  const today = new Date().toISOString().split('T')[0]
+  const today = getToday()
 
   // Step 1: Extract data from image using Claude Vision
   const response = await getAnthropic().messages.create({
