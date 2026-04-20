@@ -149,7 +149,7 @@ export default function ChatInterface() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask about deals..."
-            className="flex-1 rounded-full border border-gray-200 px-4 py-2 text-sm focus:outline-none focus:border-green-400"
+            className="flex-1 rounded-full border border-gray-200 px-4 py-2 text-sm text-gray-900 bg-white placeholder-gray-400 focus:outline-none focus:border-green-400"
           />
           <button
             type="submit"
